@@ -2,6 +2,9 @@
     --bg-color: #0a0a0a;
     --text-color: #e0e0e0;
     --glow-color: rgba(0, 255, 136, 0.7);
+    /* NEW: Variables to hold mouse coordinates */
+    --mouse-x: 50%;
+    --mouse-y: 50%;
 }
 
 body {
@@ -20,6 +23,13 @@ body {
 .container {
     text-align: center;
     z-index: 2;
+    transition: opacity 0.5s ease-out; /* Add transition for fading out */
+}
+
+/* NEW: Class to fade out the initial content */
+.container.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 h1 {
@@ -71,10 +81,58 @@ a:hover {
     height: 100%;
     z-index: 1;
     pointer-events: none;
-    background-image: url('data:image/svg+xml,...'); /* A very long data URI for a noise texture is usually here. For brevity, we'll use an animation. */
     opacity: 0.05;
     animation: noise 0.2s infinite linear;
 }
+
+/* ===== NEW STYLES FOR THE VOID ===== */
+
+#void-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: 0;
+    pointer-events: none; /* Can't interact with it while hidden */
+    transition: opacity 0.5s ease-in;
+    z-index: 10;
+
+    /* The Spotlight Effect! */
+    mask-image: radial-gradient(
+        circle 200px at var(--mouse-x) var(--mouse-y),
+        black 0%,
+        transparent 100%
+    );
+    -webkit-mask-image: radial-gradient(
+        circle 200px at var(--mouse-x) var(--mouse-y),
+        black 0%,
+        transparent 100%
+    );
+}
+
+#void-container.visible {
+    opacity: 1;
+    pointer-events: all; /* Make it interactive once visible */
+}
+
+.void-text {
+    position: absolute;
+    color: #333; /* Dark gray, almost invisible */
+    font-size: 2rem;
+    font-family: 'Special Elite', cursive;
+    filter: blur(1px); /* A little distorted */
+}
+
+/* Position the hidden text around the screen */
+#v1 { top: 20%; left: 15%; }
+#v2 { top: 30%; left: 60%; }
+#v3 { top: 70%; left: 10%; }
+#v4 { top: 50%; left: 45%; }
+#v5 { top: 85%; left: 70%; }
+#v6 { top: 10%; left: 40%; }
+
 
 @keyframes noise {
     0%, 100% { transform: translate(0, 0); }
