@@ -28,15 +28,14 @@ const mainContent = document.getElementById('main-content');
 const voidContainer = document.getElementById('void-container');
 const voidTexts = document.querySelectorAll('.void-text');
 
-const spotlightRadius = 175; // Match the new CSS radius
-const teleportBuffer = 50; // Extra distance before a word can teleport
+const spotlightRadius = 175;
+const teleportBuffer = 50;
 
 let currentSpotlight = { x: 0, y: 0 };
 
-// Function to check if a new position overlaps with any existing word
 function isPositionOccupied(newRect, currentWord) {
     for (const word of voidTexts) {
-        if (word === currentWord) continue; // Don't check against self
+        if (word === currentWord) continue;
         const existingRect = word.getBoundingClientRect();
         const overlap = !(newRect.right < existingRect.left || 
                           newRect.left > existingRect.right || 
@@ -54,11 +53,9 @@ function repositionWord(word) {
     let safetyCounter = 0;
 
     do {
-        // Generate new position pulled further from the edges
-        newX = Math.random() * 70 + 15; // Range: 15% to 85%
-        newY = Math.random() * 70 + 15; // Range: 15% to 85%
+        newX = Math.random() * 70 + 15;
+        newY = Math.random() * 70 + 15;
 
-        // Create a temporary rectangle to check the new position
         const tempWord = word.cloneNode(true);
         tempWord.style.left = `${newX}%`;
         tempWord.style.top = `${newY}%`;
@@ -66,7 +63,6 @@ function repositionWord(word) {
         newRect = tempWord.getBoundingClientRect();
         voidContainer.removeChild(tempWord);
         
-        // Check for collisions and if the new spot is in the current spotlight
         isOccupied = isPositionOccupied(newRect, word);
         
         const newCenterX = newRect.left + newRect.width / 2;
@@ -76,19 +72,25 @@ function repositionWord(word) {
         
         safetyCounter++;
 
-    } while ((isOccupied || isInSpotlight) && safetyCounter < 100); // Loop until a safe spot is found
+    } while ((isOccupied || isInSpotlight) && safetyCounter < 100);
 
-    // Apply the new safe position
     word.style.left = `${newX}%`;
     word.style.top = `${newY}%`;
 }
 
+// ===== MODIFIED FUNCTION =====
 function checkWordVisibility(spotlightX, spotlightY) {
     voidTexts.forEach(word => {
         const wordRect = word.getBoundingClientRect();
-        const wordCenterX = wordRect.left + wordRect.width / 2;
-        const wordCenterY = wordRect.top + wordRect.height / 2;
-        const distance = Math.sqrt(Math.pow(wordCenterX - spotlightX, 2) + Math.pow(wordCenterY - spotlightY, 2));
+
+        // Find the closest point on the word's bounding box to the spotlight's center
+        const closestX = Math.max(wordRect.left, Math.min(spotlightX, wordRect.right));
+        const closestY = Math.max(wordRect.top, Math.min(spotlightY, wordRect.bottom));
+
+        // Calculate the distance from the spotlight center to this closest point
+        const distance = Math.sqrt(
+            Math.pow(closestX - spotlightX, 2) + Math.pow(closestY - spotlightY, 2)
+        );
 
         const isVisible = distance < spotlightRadius;
         const wasVisible = word.dataset.visible === 'true';
@@ -96,7 +98,6 @@ function checkWordVisibility(spotlightX, spotlightY) {
         if (isVisible) {
             word.dataset.visible = 'true';
         } else if (wasVisible && distance > (spotlightRadius + teleportBuffer)) {
-            // Only teleport if it was visible AND is now fully away from the spotlight
             word.dataset.visible = 'false';
             repositionWord(word);
         }
