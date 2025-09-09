@@ -78,16 +78,11 @@ function repositionWord(word) {
     word.style.top = `${newY}%`;
 }
 
-// ===== MODIFIED FUNCTION =====
 function checkWordVisibility(spotlightX, spotlightY) {
     voidTexts.forEach(word => {
         const wordRect = word.getBoundingClientRect();
-
-        // Find the closest point on the word's bounding box to the spotlight's center
         const closestX = Math.max(wordRect.left, Math.min(spotlightX, wordRect.right));
         const closestY = Math.max(wordRect.top, Math.min(spotlightY, wordRect.bottom));
-
-        // Calculate the distance from the spotlight center to this closest point
         const distance = Math.sqrt(
             Math.pow(closestX - spotlightX, 2) + Math.pow(closestY - spotlightY, 2)
         );
@@ -119,6 +114,12 @@ enterLink.addEventListener('click', (e) => {
 
 voidContainer.addEventListener('mousemove', (e) => {
     updateSpotlight(e.clientX, e.clientY);
+});
+
+// NEW: Added touchstart listener for better mobile reliability
+voidContainer.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    updateSpotlight(e.touches[0].clientX, e.touches[0].clientY);
 });
 
 voidContainer.addEventListener('touchmove', (e) => {
