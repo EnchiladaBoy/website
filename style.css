@@ -94,12 +94,12 @@ a:hover {
     transition: opacity 0.5s ease-in;
     z-index: 10;
     mask-image: radial-gradient(
-        circle 200px at var(--mouse-x) var(--mouse-y),
+        circle 175px at var(--mouse-x) var(--mouse-y), /* Spotlight is now smaller */
         black 0%,
         transparent 100%
     );
     -webkit-mask-image: radial-gradient(
-        circle 200px at var(--mouse-x) var(--mouse-y),
+        circle 175px at var(--mouse-x) var(--mouse-y), /* Spotlight is now smaller */
         black 0%,
         transparent 100%
     );
@@ -116,7 +116,6 @@ a:hover {
     font-size: 2rem;
     font-family: 'Special Elite', cursive;
     filter: blur(1px);
-    /* The 'transition' property has been removed from here */
 }
 
 #v1 { top: 20%; left: 15%; }
