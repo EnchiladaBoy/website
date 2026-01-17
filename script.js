@@ -1,28 +1,64 @@
-// ===== PART 1: Initial text scramble effect =====
+// ===== PART 1: Radial Glitch Effect =====
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()-+";
-document.querySelectorAll('[data-value]').forEach(element => {
-    element.onmouseover = event => {
-        let iterations = 0;
-        const interval = setInterval(() => {
-            event.target.innerText = event.target.innerText.split("")
-                .map((letter, index) => {
-                    if(index < iterations) {
-                        return event.target.dataset.value[index];
-                    }
-                    return letters[Math.floor(Math.random() * letters.length)];
-                })
-                .join("");
+const glitchRadius = 150; // Distance in pixels to trigger the effect
 
-            if(iterations >= event.target.dataset.value.length) {
-                clearInterval(interval);
-            }
-            iterations += 1 / 3;
-        }, 30);
-    }
+// 1. Prepare the text: wrap every character in a span so we can target them individually
+document.querySelectorAll('[data-value]').forEach(element => {
+    const text = element.dataset.value;
+    element.innerHTML = text.split("").map((char, i) => {
+        // We use a data-char attribute to remember the original letter
+        return `<span class="glitch-char" data-char="${char}">${char}</span>`;
+    }).join("");
 });
 
+// 2. Track mouse movement to trigger the effect
+const container = document.querySelector('.container');
 
-// ===== PART 2: Interactive Void Logic =====
+container.addEventListener('mousemove', (e) => {
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+
+    document.querySelectorAll('.glitch-char').forEach(span => {
+        const rect = span.getBoundingClientRect();
+        // Calculate center of the character
+        const charX = rect.left + rect.width / 2;
+        const charY = rect.top + rect.height / 2;
+
+        // Calculate distance between mouse and character
+        const dist = Math.hypot(mouseX - charX, mouseY - charY);
+
+        // If the character is close to the mouse and not already glitching
+        if (dist < glitchRadius && !span.dataset.glitching) {
+            triggerGlitch(span);
+        }
+    });
+});
+
+function triggerGlitch(span) {
+    span.dataset.glitching = "true";
+    const originalChar = span.dataset.char;
+    let iterations = 0;
+    
+    // Determine speed based on if it's a space or text (spaces are faster)
+    const maxIterations = 10; 
+
+    const interval = setInterval(() => {
+        // Random character
+        span.innerText = letters[Math.floor(Math.random() * letters.length)];
+
+        // Resolve back to original
+        if (iterations >= maxIterations) {
+            span.innerText = originalChar;
+            span.dataset.glitching = ""; // Allow it to be triggered again
+            clearInterval(interval);
+        }
+        
+        iterations += 1;
+    }, 30);
+}
+
+
+// ===== PART 2: Interactive Void Logic (Unchanged) =====
 const enterLink = document.getElementById('enter-link');
 const mainContent = document.getElementById('main-content');
 const voidContainer = document.getElementById('void-container');
