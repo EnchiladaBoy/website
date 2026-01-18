@@ -1,64 +1,70 @@
-// ===== PART 1: Radial Glitch Effect =====
+// ===== PART 1: Continuous Radial Glitch =====
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()-+";
-const glitchRadius = 150; // Distance in pixels to trigger the effect
+const glitchRadius = 150; // Radius in pixels
+const glitchSpeed = 8;    // Higher number = Slower glitch (updates every N frames)
 
-// 1. Prepare the text: wrap every character in a span so we can target them individually
+let mouseX = -1000; // Start off-screen
+let mouseY = -1000;
+
+// 1. Prepare the text
 document.querySelectorAll('[data-value]').forEach(element => {
     const text = element.dataset.value;
-    element.innerHTML = text.split("").map((char, i) => {
-        // We use a data-char attribute to remember the original letter
-        return `<span class="glitch-char" data-char="${char}">${char}</span>`;
+    element.innerHTML = text.split("").map((char) => {
+        // We add a 'data-frame' to track timing for each letter individually
+        return `<span class="glitch-char" data-char="${char}" data-frame="0">${char}</span>`;
     }).join("");
 });
 
-// 2. Track mouse movement to trigger the effect
-const container = document.querySelector('.container');
+// 2. Track mouse globally (works for both sections)
+document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+});
 
-container.addEventListener('mousemove', (e) => {
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
+// 3. The Animation Loop
+function animateGlitch() {
+    requestAnimationFrame(animateGlitch);
 
     document.querySelectorAll('.glitch-char').forEach(span => {
         const rect = span.getBoundingClientRect();
-        // Calculate center of the character
         const charX = rect.left + rect.width / 2;
         const charY = rect.top + rect.height / 2;
 
-        // Calculate distance between mouse and character
+        // Check distance to mouse
         const dist = Math.hypot(mouseX - charX, mouseY - charY);
 
-        // If the character is close to the mouse and not already glitching
-        if (dist < glitchRadius && !span.dataset.glitching) {
-            triggerGlitch(span);
+        if (dist < glitchRadius) {
+            // === INSIDE RADIUS: GLITCH IT ===
+            
+            // We use a counter so it doesn't change every single frame (too fast)
+            let frame = parseInt(span.dataset.frame);
+            frame++;
+
+            if (frame >= glitchSpeed) {
+                // Time to swap the character
+                span.innerText = letters[Math.floor(Math.random() * letters.length)];
+                frame = 0; // Reset counter
+            }
+            
+            span.dataset.frame = frame;
+
+        } else {
+            // === OUTSIDE RADIUS: RESET IT ===
+            
+            // If it's not the original letter, snap it back
+            if (span.innerText !== span.dataset.char) {
+                span.innerText = span.dataset.char;
+                span.dataset.frame = 0;
+            }
         }
     });
-});
-
-function triggerGlitch(span) {
-    span.dataset.glitching = "true";
-    const originalChar = span.dataset.char;
-    let iterations = 0;
-    
-    // Determine speed based on if it's a space or text (spaces are faster)
-    const maxIterations = 10; 
-
-    const interval = setInterval(() => {
-        // Random character
-        span.innerText = letters[Math.floor(Math.random() * letters.length)];
-
-        // Resolve back to original
-        if (iterations >= maxIterations) {
-            span.innerText = originalChar;
-            span.dataset.glitching = ""; // Allow it to be triggered again
-            clearInterval(interval);
-        }
-        
-        iterations += 1;
-    }, 30);
 }
 
+// Start the loop
+animateGlitch();
 
-// ===== PART 2: Interactive Void Logic (Unchanged) =====
+
+// ===== PART 2: Interactive Void Logic (Preserved) =====
 const enterLink = document.getElementById('enter-link');
 const mainContent = document.getElementById('main-content');
 const voidContainer = document.getElementById('void-container');
@@ -152,7 +158,6 @@ voidContainer.addEventListener('mousemove', (e) => {
     updateSpotlight(e.clientX, e.clientY);
 });
 
-// NEW: Added touchstart listener for better mobile reliability
 voidContainer.addEventListener('touchstart', (e) => {
     e.preventDefault();
     updateSpotlight(e.touches[0].clientX, e.touches[0].clientY);
