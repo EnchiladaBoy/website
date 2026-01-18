@@ -63,8 +63,7 @@ function animateGlitch() {
 // Start the loop
 animateGlitch();
 
-
-// ===== PART 2: Interactive Void Logic (Preserved) =====
+// ===== PART 2: Interactive Void Logic =====
 const enterLink = document.getElementById('enter-link');
 const mainContent = document.getElementById('main-content');
 const voidContainer = document.getElementById('void-container');
@@ -148,8 +147,15 @@ function updateSpotlight(x, y) {
     checkWordVisibility(x, y);
 }
 
+// === UPDATED EVENT LISTENER ===
 enterLink.addEventListener('click', (e) => {
     e.preventDefault();
+    
+    // 1. Force the spotlight to the click coordinates immediately
+    //    We use clientX/Y from the click event itself.
+    updateSpotlight(e.clientX, e.clientY);
+
+    // 2. Then switch the visibility
     mainContent.classList.add('hidden');
     voidContainer.classList.add('visible');
 });
@@ -167,3 +173,4 @@ voidContainer.addEventListener('touchmove', (e) => {
     e.preventDefault();
     updateSpotlight(e.touches[0].clientX, e.touches[0].clientY);
 });
+
